@@ -1,4 +1,4 @@
-# Exercise Part 2 - Deepen Understanding Through Guided QUestions
+# Exercise Part 2 - Deepen Understanding Through Guided Questions
 
 **Task Priorization System**
 
