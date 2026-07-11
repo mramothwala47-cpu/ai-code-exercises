@@ -2,145 +2,103 @@
 
 **Task Priorization System**
 
-# 1. Initial Understanding
-Before examining the code in detail, my understanding was:
-- Each task has a priority level.
-- The priority is selected what creating a task.
-- Priority can be updated after the task has been created.
-- Tasks can also be filtere by priority when listing them.
+# 1. Initial Understanding of the Task Prioritization System
+I explored how task priorities are implemented in the Task Manager application
+From my initial review, I understood that task priorities are represented using the 'TaskPriority' enum in 'models.py'. The application supports four priority levels.
 
-I expected the priority values to simply be stored as numbers.
+- LOW (1)
+- MEDIUM (2)
+- HIGH (3)
+- URGENT (4)
+When a user creates a task through the CLI, they provide a priority value, which is passed to the 'TaskManager'. The 'TaskManager' converts this value into a 'TaskPriority' enum before creating the task. The priority is then stored as part of the 'Task' object and saved to 'tasks.json'.
 
-# 2. Prompt Used
-My approach so far:
-- I have searched for keywords like "priority", "TaskPriority", "update_task_priority", and "get_tasks_by_priority".
-- I looked in cli.py, task_manager.py, models.py, and storage.py.
-- I think the feature is handled by the CLI, business logic, date model, and storage components.
+The main files involved appear to be:
+- 'cli.py'
+- 'task_manager.py'
+- 'models.py'
+- 'storage.py'
 
-Project Structure:
-TaskManager/
-- cli.py
-- task_manager.py
-- models.py
-- storage.py
-- tests/
-- README.md
+I believe the code works by receiving the user's priority value, validating it, converting it into an enum, and saving it with the task. When tasks are loaded again, the priority is converted back into a 'TaskPriority' enum.
 
- Based on my research, these files appear relevant:
- - cli.py
- - task_manager.py
- - models.py
- - storage.py
+# 2. Guided Questions
+## Question 1
+Where in the application is the user's numeric priority converted into a 'TaskPriority' enum, and why do you think this conversion happens there instead of in the CLI?
 
-Can you help me:
-1. Evaluate my search approach and suggest improvements.
-2. Identify which files contain the prioritization feature.
-3. Suggest better search terms.
-4. Explain how the feature us divided across the codebase.
-5. Recommend a step-by-step investigation process.
+## Question 2
+Trace the priority value from the moment the user enters it until it is written to `tasks.json`.
+Which methods and files are involved?
 
-AI Guided Questions:
-After using the prompt, the AI suggested the following questions to guide my investigation:
-## 1. Where is task priority first defined?
-I found that the task task priority is defined in **models,py** using the 'TaskPriority' enum
+## Question 3
+Look at the `TaskEncoder'  and `TaskDecoder` classes in `storage.py`.
+How is the priority converted when saving tasks, and how is it restored when tasks are loaded?
 
-'''python
-class TaskPriority(Enum):
-    LOW = 1
-    MEDIUM = 2
-    HIGH = 3
-    URGENT = 4
-'''
+## Question 4
+What happens if a user enters an invalid priority value?
+Which part of the application prevents invalid data from being stored?
 
-## 2. How does the user choose a priority?
-The user specifies the priority through the command line.
-
-```python
-
-create_parser.add_argument(
-    "--priority",
-    type=int,
-    choices=[1,2,3,4](
-
-This ensures only valid priority values can be entered.
-
-## 3. How is the numeric priority converted into a Python object?
-
-Inside 'task_manager.py`, the integer is converted into a `TaskPriority` enum.
-
-```python
-priority = TaskPriority(priority_value)
-```
+## Question 5
+If you wanted to add a new priority level called **CRITICAL**, which files would need to be updated?
 
 ---
 
-## 4. Where is the priority stored?
-The priority is stored inside the `Task` object.
-
+# 3. Answers After Exploring the Code
+## Answer 1
+The priority is converted into a `TaskPriority` enum inside the `create_task()` method in `task_manager.py` using:
 ```python
-self.priority = priority
+priority = TaskPriority(priority_value)
 ```
+Keeping this conversion in the business logic allows the `TaskManager` to validate and process data consistently, regardless of where the input comes from.
+---
 
-## 5. How is the priority updated?
+## Answer 2
+The priority moves through the application in the following order:
+'''
+User Input
+      │
+      ▼
+cli.py
+      │
+      ▼
+TaskManager.create_task()
+      │
+      ▼
+Task()
+      │
+      ▼
+TaskStorage.add_task()
+      │
+      ▼
+tasks.json
+``'
+Each layer has a specific responsibility, which makes the application easier to maintain.
 
-The CLI calls:
+## Answer 3
+When saving tasks, the `TaskEncoder` converts the enum into its numeric value before writing it to JSON.
+When loading tasks, the `TaskDecoder` reads the numeric value from `tasks.json` and converts it back into a `TaskPriority` enum.
+This allows the application to use enums internally while storing simple values in the JSON file.
 
-```python
-update_task_priority()
-```
+## Answer 4
+The CLI only accepts values from 1 to 4 by defining valid choices for the priority argument.
+In addition, `TaskManager` converts the value into a `TaskPriority` enum. If an invalid value somehow reaches this point, it will not be accepted as a valid enum value, preventing incorrect data from being stored.
 
-which then updates the task through the storage layer.
+## Answer 5
+Adding a new priority level would require changes to:
+- `models.py` to define the new enum value.
+- `cli.py` to allow users to select the new priority.
+- `cli.py` to update the priority display symbols.
+- Any logic that filters or displays priorities if necessary.
 
-```python
-return self.storage.update_task(
-    task_id,
-    priority=new_priority
-)
-```
+# 4. Code Understanding Journal
+## 4.1. Initial Understanding vs. What I discovered.
+Initially, i thought task priorities were simply integers that were passed throughout the application. After examining the code more closely, I discovered that the applicationconverts these integers into 'TaskPriority' enums before storing them in the 'Task' object. The enum is only converted back into an integer when the task is saved to 'task.json'.
+The storage layer would continue to function because it already supports encoding and decoding enum values.
 
-## 6. How are tasks filtered by priority?
+## 4.2. Key Insights the Guided Questions Helped Me Uncover
+- The 'TaskManager' is responsible for converting and validating priority values.
+- The application separates user input , business logic, data models, and storage into different modules.
+- 'TaskEncoder' and 'TaskDecoder' manage the conversion between Python objects and JSON data.
+- The layered design makes the code easier to understand and maintain.
 
-The filtering happens in `storage.py`.
-
-```python
-def get_tasks_by_priority(self, priority):
-    return [
-        task
-        for task in self.tasks.values()
-        if task.priority == priority
-    ]
-```
-
-## 7. How is priority stored and retrieved?
-
-Tasks are stored in **tasks.json**.
-
-Before saving:
-
-- the priority enum is converted into an integer.
-
-When loading:
-
-- the integer is converted back into a `TaskPriority` enum.
-
-# 3. Journal Reflection
-
-## 3.1. Initial Understanding vs What I Discovered
-Initially, I believed that task priorities were simply numbers stored with each task.
-After exploring the code, I discovered that the application uses the 'TaskPriority' enum to represent priorities internally. Numeric values are only used for user input and JSON storage, while the application itself works with enum objects.
-
-## 3.2. Key Insights the Guided Questions Helped Uncover:
-- The prioritization feature is spread across multiple file rather than existing in one location
-- The CLI validates user input before passing it to the business logic.
-- The "TaskManager" coverts user input into enum object.
-- The 'Task' model stores the priority.
-- 'TaskStorage' is responsible for saving and loading the priority.
-- Custom JSON encoding and decoding preserve enum values when writing to and reading from 'task.json'.
-
-## 3.3. Misconceptions That Were Clarified
-I originally thought priorities were stored and used only as integers.
-
-After examining the code, I learned that integers are only used when interacting with the user or storing data in JSON. Inside the application, priorities are represented using the 'TaskPriority' enum, making the code easier to read, safer, and more maintainable.
-
-This conversion is handled by `TaskEncoder' and `TaskDecoder`.
-
+## 4.3. Misconceptions That Were Clarified
+I originally believed that the priority remained an integer throughout the application. I learned that it is actually stored as a 'TaskPriority' enum while the application is running.
+I also assumed that validation occurred only in the CLI. After exploring the code , I found that the 'TaskManager' also validates the priority by converting it into a 'TaskPriority' enum before creating a task.
