@@ -204,4 +204,4 @@ Testing the complete workflow provides confidence that the task prioritization s
 
 # Summary
 
-This exercise demonstrated how to test the complete task-priority workflow by integrating three related functions. Rather than testing each function individually, the integration test verified that scores were calculated correctly, tasks were sorted in the correct order, and the highest-priority tasks were successfully returned. Following the Arrange–Act–Assert structure made the test easy to read, understand, and maintain while ensuring that the overall workflow behaved as expected.
+This demonstrated how to test the complete task-priority workflow by integrating three related functions. Rather than testing each function individually, the integration test verified that scores were calculated correctly, tasks were sorted in the correct order, and the highest-priority tasks were successfully returned. Following the Arrange–Act–Assert structure made the test easy to read, understand, and maintain while ensuring that the overall workflow behaved as expected.
