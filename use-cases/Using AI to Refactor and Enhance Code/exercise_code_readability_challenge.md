@@ -204,6 +204,6 @@ Future code should follow these practices:
 
 
 # Conclusion
-This exercise demonstrated that improving readability does not require changing functionality. By applying better formatting, meaningful naming, and clearer organization, the code became significantly easier to understand while preserving its original behavior.
+This demonstrated that improving readability does not require changing functionality. By applying better formatting, meaningful naming, and clearer organization, the code became significantly easier to understand while preserving its original behavior.
 
 **Final Status:** Refactoring completed successfully and all unit tests continue to pass.
