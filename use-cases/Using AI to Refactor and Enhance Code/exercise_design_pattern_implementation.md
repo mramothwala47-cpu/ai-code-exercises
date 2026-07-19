@@ -306,4 +306,4 @@ The main challenge was deciding which responsibilities belonged in the abstract 
 
 The Factory Pattern successfully refactored the original implementation by separating object creation from business logic. The resulting design is cleaner, easier to extend, and more maintainable while preserving the original functionality.
 
-**Final Status:** ✅ Factory Pattern implemented successfully and all unit tests pass.
+**Final Status:** Factory Pattern implemented successfully and all unit tests pass.
